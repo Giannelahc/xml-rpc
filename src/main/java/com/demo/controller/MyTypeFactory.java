@@ -12,10 +12,18 @@ import org.apache.xmlrpc.common.XmlRpcStreamConfig;
 import org.apache.xmlrpc.parser.DateParser;
 import org.apache.xmlrpc.parser.TypeParser;
 import org.apache.xmlrpc.serializer.DateSerializer;
+import org.apache.xmlrpc.serializer.StringSerializer;
 import org.apache.xmlrpc.serializer.TypeSerializer;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 public class MyTypeFactory extends TypeFactoryImpl {
+    
+    private static final TypeSerializer myStringSerializer = new StringSerializer(){
+        public void write(ContentHandler pHandler, Object pObject) throws SAXException {
+            write(pHandler, STRING_TAG, pObject.toString());
+        }
+    };
     
     public MyTypeFactory(XmlRpcController pController) {
         super(pController);
@@ -36,8 +44,10 @@ public class MyTypeFactory extends TypeFactoryImpl {
     }
 
     public TypeSerializer getSerializer(XmlRpcStreamConfig pConfig, Object pObject) throws SAXException {
-        if (pObject instanceof Date) {System.out.println(pObject);
+        if (pObject instanceof Date) {
             return new DateSerializer(newFormat());
+        } else if (pObject instanceof String) {
+            return myStringSerializer;
         } else {
             return super.getSerializer(pConfig, pObject);
         }
